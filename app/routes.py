@@ -1,8 +1,14 @@
-from flask import render_template, request, session
+from datetime import timedelta
+from flask import render_template, request, session, url_for, redirect
 import requests
 from app import app
 from .forms import LoginForm, SignUpForm
 
+app.permanent_session_lifetime = timedelta(minutes=15) 
+# ...
+# this code sets the duration of session data for 15 minutes, 
+# which otherwise is by default 30 days.
+# ...
 @app.route('/')
 def hello():
    return render_template('home.html')
@@ -84,7 +90,11 @@ def pokemon():
             pokemon_catch_id = session.get('pokemon_name_id')
             #if 'pokemon_catchlist' not in session:
             pokemon_catchlist = session.get('pokemon_catchlist',[])
-            pokemon_catchlist.append(pokemon_catch_id)
+            if len(pokemon_catchlist)<6:
+                if pokemon_catch_id not in pokemon_catchlist:
+                    pokemon_catchlist.append(pokemon_catch_id)
+            elif(len(session['pokemon_catchlist'])==6):
+                print("Pokemon Catch Limit Already Reached! Try releasing the ones you do not want anymore")
             session['pokemon_catchlist'] = pokemon_catchlist
                 # while(len(session['pokemon_catchlist'])<6):
                 #     session['pokemon_catchlist'].append(pokemon_catch_id)
@@ -98,20 +108,48 @@ def pokemon():
         return render_template('pokemon.html')
 
 
-@app.route('/pokemonteam', methods = ['GET','POST'])
+@app.route('/pokemonteam')
 def pokemonteam():
-    if request.method == 'GET':
-        for item in session['pokemon_catchlist']:
-            pokemon_deet = pokemon_info(item)
-            print(pokemon_deet)
-        return render_template('pokemonteam.html', pokemon_deet=pokemon_deet)
+    pokemon_infolist=[]
+
+    if 'pokemon_catchlist' in session:
+        for pokemon in session['pokemon_catchlist']:
+            pokemon_in = pokemon_info(pokemon)
+            pokemon_infolist.append(pokemon_in)
+            # print(pokemon_infolist)
+    return render_template('pokemonteam.html', pokemon_infolist=pokemon_infolist)
     
-    elif request.method == 'POST':
+    # elif request.method == 'POST':
         
-        pokemon_release_id = session.get('pokemon_name_id')
-        session['pokemon_catchlist'].remove(pokemon_release_id)
-        print(session['pokemon_catchlist'])
-    return render_template('pokemonteam.html')
+    #     pokemon_release_id = session.get('pokemon_name_id')
+    #     pokemon_list = session['pokemon_catchlist']
+    #     if pokemon_list:
+    #         pokemon_list.remove(pokemon_release_id)
+    #     print(pokemon_list)
+    # return render_template('pokemonteam.html', pokemon_list=pokemon_list)
 
+@app.route('/pokemonteam/release/<int:pokemon_id>')
+def release_pokemon(pokemon_id):
+    print(type(pokemon_id))
+    pokemon_list = session['pokemon_catchlist']
+    if pokemon_list:
+        if pokemon_id in pokemon_list:
+            pokemon_list.remove(pokemon_id)
+    print(pokemon_list)
+    return redirect(url_for('pokemonteam'))
 
+# @app.route('/pokemonteam/release/<int:pokemon_id>')
+# def release_pokemon(pokemon_id):
+#     print(type(pokemon_id))
+    
+#     # Convert pokemon_id to integer directly, no need for a separate variable
+#     # Ensure that 'pokemon_catchlist' exists in the session
+#     if 'pokemon_catchlist' in session:
+#         pokemon_list = session['pokemon_catchlist']
+        
+#         # Check if the Pokemon ID is in the list before attempting to remove
+#         if pokemon_id in pokemon_list:
+#             pokemon_list.remove(pokemon_id)
 
+#     print(pokemon_list)
+#     return redirect(url_for('pokemonteam'))

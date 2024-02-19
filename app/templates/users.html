@@ -10,14 +10,12 @@ Pokemon
 
 {%block content%} 
 {%include './includes/navbar.html'%}    
-  <h2 class="table-header"> Team Pokemon </h2>
 
-    {%if pokemon_infolist%}
-     
-    <!-- {{pokemon_deet}} -->
+<h2> Team Pokemon </h2>
+
+    
         <table class="table">
             <thead class="thead-dark">
-        
               <tr>
                 <th scope="col">Member#</th>
                 <th scope="col">Pokemon ID</th>
@@ -28,24 +26,21 @@ Pokemon
             </thead>
             
             <tbody>
-              
-              {%for pokemon in pokemon_infolist%}
-        
+              <!-- {%if pokemon_deet%} -->
+              {%for pokemon_name_id in session['pokemon_catchlist']%}
               <tr>
-                <th scope="row">{{loop.index}}</th>
-                <td>{{pokemon.id}}</td>
-                <td>{{pokemon.name.upper()}}</td>
+                <th scope="row">1</th>
+                <td>{{pokemon_deet.id}}</td>
+                <td>{{pokemon_deet.name.upper()}}</td>
                 <td>Today</td>
-                <td> <a href="{{url_for('release_pokemon',pokemon_id=pokemon.id)}} " class ="btn my-btn"> Release</a></td>
+                <td><button id ="catch-btn" name="catch-btn" type="submit" class ="btn my-btn"> Release </button></td>
               </tr>
-      
               {%endfor%}
-              
               
             </tbody>
             
           </table>
-        {%endif%} 
+
    
   
 
